@@ -27,7 +27,7 @@ class CostServiceTest {
         request.setDistanceKm(100.0); // 100km * 0.40 = 40.0€
         request.setServiceType("STANDARD"); // Tarifa base = 15.0€ -> Total esperable = 62.5€
 
-        // 2. Act (Ejecutar el método a probar)
+        // 2. Act (Ejecutar el méthod a probar)
         CostResponse response = costService.calculateCost(request);
 
         // 3. Assert (Verificar resultados)
