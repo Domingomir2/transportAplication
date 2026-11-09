@@ -2,12 +2,31 @@ package com.transport.transportApplication.service;
 
 import com.transport.transportApplication.model.CostRequest;
 import com.transport.transportApplication.model.CostResponse;
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationRegistry;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class CostService {
 
+    private final ObservationRegistry observationRegistry;
+
+    public CostService() {
+        this(ObservationRegistry.NOOP);
+    }
+
+    @Autowired
+    public CostService(ObservationRegistry observationRegistry) {
+        this.observationRegistry = observationRegistry;
+    }
+
     public CostResponse calculateCost(CostRequest request) {
+        return Observation.createNotStarted("transport.cost.calculate", observationRegistry)
+                .observe(() -> calculate(request));
+    }
+
+    private CostResponse calculate(CostRequest request) {
         double baseCost = 15.0; // Tarifa fija de gestión
         double weightCost = request.getWeightKg() * 0.75; // 0.75€ por kg
         double distanceCost = request.getDistanceKm() * 0.40; // 0.40€ por km

@@ -1,0 +1,17 @@
+[
+    "EXPEDICION",
+    "F_CONCERTADA",
+    "KEYEMB",
+    "NUM_EMBALAJES",
+    "GEST_ADUANAS",
+    "OBS_ADUANAS",
+    "KEYPROVE",
+    "TIPO_COD",
+    "KEYPAI",
+    "KEYAGENCIA_ORI",
+    "KEYAGENCIA_DES",
+    "DIVISA_FACTURA_C",
+    "ENT_DIR",
+    "REQUIERE_CONCERTACION",
+    "WEIGHT_FACTOR"
+]

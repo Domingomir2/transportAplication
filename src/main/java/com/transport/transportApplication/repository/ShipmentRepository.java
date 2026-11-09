@@ -1,6 +1,9 @@
 package com.transport.transportApplication.repository;
 
 import com.transport.transportApplication.model.Shipment;
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationRegistry;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.Comparator;
@@ -16,8 +19,15 @@ public class ShipmentRepository {
     // Datos simulados (Mock data).
     // La clave del mapa es el trackingNumber normalizado: sin espacios y en mayúsculas.
     private final Map<String, Shipment> shipments = new ConcurrentHashMap<>();
+    private final ObservationRegistry observationRegistry;
 
     public ShipmentRepository() {
+        this(ObservationRegistry.NOOP);
+    }
+
+    @Autowired
+    public ShipmentRepository(ObservationRegistry observationRegistry) {
+        this.observationRegistry = observationRegistry;
         addInitialShipment(new Shipment("TRK-001", "Madrid", "Barcelona", "IN_TRANSIT", 45.5));
         addInitialShipment(new Shipment("TRK-002", "Valencia", "Sevilla", "PENDING", 120.0));
         addInitialShipment(new Shipment("TRK-003", "Bilbao", "Zaragoza", "DELIVERED", 15.2));
@@ -28,17 +38,21 @@ public class ShipmentRepository {
      * pueda modificar el estado interno del repositorio desde fuera.
      */
     public List<Shipment> findAll() {
-        return shipments.values().stream()
-                .sorted(Comparator.comparing(Shipment::getTrackingNumber))
-                .toList();
+        return Observation.createNotStarted("transport.shipment.find_all", observationRegistry)
+                .observe(() -> shipments.values().stream()
+                        .sorted(Comparator.comparing(Shipment::getTrackingNumber))
+                        .toList());
     }
 
     public Optional<Shipment> findByTrackingNumber(String trackingNumber) {
-        String key = normalizeTrackingNumber(trackingNumber);
-        if (key == null) {
-            return Optional.empty();
-        }
-        return Optional.ofNullable(shipments.get(key));
+        return Observation.createNotStarted("transport.shipment.find_by_tracking_number", observationRegistry)
+                .observe(() -> {
+                    String key = normalizeTrackingNumber(trackingNumber);
+                    if (key == null) {
+                        return Optional.empty();
+                    }
+                    return Optional.ofNullable(shipments.get(key));
+                });
     }
 
     /**
@@ -48,10 +62,14 @@ public class ShipmentRepository {
      * @return el envío guardado y si la operación ha sido una creación
      */
     public SaveResult addShipment(Shipment shipment) {
+        return Observation.createNotStarted("transport.shipment.save", observationRegistry)
+                .observe(() -> save(shipment));
+    }
+
+    private SaveResult save(Shipment shipment) {
         if (shipment == null) {
             throw new IllegalArgumentException("El envío no puede ser nulo");
         }
-
         String key = normalizeTrackingNumber(shipment.getTrackingNumber());
         if (key == null) {
             throw new IllegalArgumentException("El trackingNumber del envío es obligatorio");

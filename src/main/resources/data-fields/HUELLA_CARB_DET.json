@@ -1,0 +1,14 @@
+[
+    "EXPEDICION",
+    "REFERENCIA",
+    "CO2_TANK_TO_WHEEL",
+    "CO2_WELL_TO_WHEEL",
+    "CO2_TANK_TO_WHEEL_EQ",
+    "CO2_WELL_TO_WHEEL_EQ",
+    "OXIDO_SULFURO",
+    "PARTICULAS",
+    "TIPO",
+    "USR_ORIGEN",
+    "DISTANCE",
+    "TRANSPORTID"
+]
