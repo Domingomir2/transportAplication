@@ -1,6 +1,7 @@
 package com.transport.transportApplication.controller;
 
-import com.transport.transportApplication.model.RhoResponse;
+import com.transport.transportApplication.model.TableResponse;
+import com.transport.transportApplication.model.Rho;
 import com.transport.transportApplication.service.RhoService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -22,7 +23,7 @@ public class RhoController {
 
     @GetMapping
     @Operation(operationId = "getRho", summary = "Consultar expediciones RHO por fecha")
-    public RhoResponse getRho(
+    public TableResponse<Rho> getRho(
             @RequestParam String fromDate,
             @RequestParam(required = false) String toDate,
             @RequestParam(defaultValue = "100") int numReg,

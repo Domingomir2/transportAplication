@@ -1,11 +1,11 @@
 package com.transport.transportApplication.model;
 
 public class CostResponse {
-    private double baseCost;
-    private double weightCost;
-    private double distanceCost;
-    private double totalCost;
-    private String currency = "EUR";
+    private final double baseCost;
+    private final double weightCost;
+    private final double distanceCost;
+    private final double totalCost;
+    private static String currency = "EUR";
 
     public CostResponse(double baseCost, double weightCost, double distanceCost, double totalCost) {
         this.baseCost = baseCost;

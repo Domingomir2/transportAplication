@@ -38,9 +38,6 @@ public class RhoCostesNac {
     @JsonProperty("FECHA_REG")
     private LocalDateTime fechaReg;
 
-    public RhoCostesNac() {
-    }
-
     public Long getExpedicion() {
         return expedicion;
     }

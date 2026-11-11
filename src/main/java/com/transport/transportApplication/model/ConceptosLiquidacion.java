@@ -9,9 +9,6 @@ public class ConceptosLiquidacion {
     @JsonProperty("DESCRIPCONCEPTO")
     private String descripconcepto;
 
-    public ConceptosLiquidacion() {
-    }
-
     public String getKeyconcepto() {
         return keyconcepto;
     }

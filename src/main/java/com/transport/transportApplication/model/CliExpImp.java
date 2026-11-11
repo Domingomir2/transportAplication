@@ -42,9 +42,6 @@ public class CliExpImp {
     @JsonProperty("TIPO")
     private String tipo;
 
-    public CliExpImp() {
-    }
-
     public Integer getKeycliexpimp() {
         return keycliexpimp;
     }

@@ -28,9 +28,6 @@ public class RcoIncidencias {
     @JsonProperty("F_GRABA")
     private LocalDateTime fGraba;
 
-    public RcoIncidencias() {
-    }
-
     public Long getKeyrco() {
         return keyrco;
     }

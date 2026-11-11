@@ -18,9 +18,6 @@ public class Pai {
     @JsonProperty("PLA_INTER")
     private Integer plaInter;
 
-    public Pai() {
-    }
-
     public String getKeypai() {
         return keypai;
     }

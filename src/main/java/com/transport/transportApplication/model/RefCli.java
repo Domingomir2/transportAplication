@@ -12,9 +12,6 @@ public class RefCli {
     @JsonProperty("TIPO")
     private String tipo;
 
-    public RefCli() {
-    }
-
     public Long getExpedicion() {
         return expedicion;
     }

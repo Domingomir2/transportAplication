@@ -87,8 +87,9 @@ class ShipmentRepositoryTest {
     @Test
     void findAll_ReturnsUnmodifiableList() {
         List<Shipment> shipments = repository.findAll();
+        Shipment newShipment = new Shipment("TRK-999", "A", "B", "PENDING", 1.0);
 
         assertThrows(UnsupportedOperationException.class,
-                () -> shipments.add(new Shipment("TRK-999", "A", "B", "PENDING", 1.0)));
+                () -> shipments.add(newShipment));
     }
 }

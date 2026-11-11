@@ -12,9 +12,6 @@ public class Emb {
     @JsonProperty("DENOM")
     private String denom;
 
-    public Emb() {
-    }
-
     public String getKeyemb() {
         return keyemb;
     }

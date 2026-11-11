@@ -16,9 +16,6 @@ public class RefAduInfoImp {
     @JsonProperty("FECHA_GRABA")
     private LocalDateTime fechaGraba;
 
-    public RefAduInfoImp() {
-    }
-
     public Long getExpedicion() {
         return expedicion;
     }

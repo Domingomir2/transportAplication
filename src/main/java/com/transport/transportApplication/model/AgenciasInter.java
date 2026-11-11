@@ -60,9 +60,6 @@ public class AgenciasInter {
     @JsonProperty("COD_DACHSER")
     private String codDachser;
 
-    public AgenciasInter() {
-    }
-
     public String getKeyagencia() {
         return keyagencia;
     }

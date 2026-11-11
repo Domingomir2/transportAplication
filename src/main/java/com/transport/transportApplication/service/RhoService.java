@@ -1,7 +1,7 @@
 package com.transport.transportApplication.service;
 
 import com.transport.transportApplication.model.Rho;
-import com.transport.transportApplication.model.RhoResponse;
+import com.transport.transportApplication.model.TableResponse;
 import com.transport.transportApplication.repository.DateFilteredTableRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
@@ -32,7 +32,7 @@ public class RhoService {
         this.dateFilteredTableRepository = dateFilteredTableRepository;
     }
 
-    public RhoResponse getRho(String fromDate, String toDate, int numReg, int page) {
+    public TableResponse<Rho> getRho(String fromDate, String toDate, int numReg, int page) {
         LocalDate start = parseDate(fromDate, "fromDate");
         LocalDate end = toDate == null || toDate.isBlank() ? start : parseDate(toDate, "toDate");
         if (end.isBefore(start)) {
@@ -57,10 +57,15 @@ public class RhoService {
                 ? "No se encontraron expediciones para el rango de fechas en la página indicada"
                 : "Consulta realizada correctamente";
 
-        return new RhoResponse(
-                    new RhoResponse.Summary(expeditions.isEmpty() ? "ERROR": "SUCCESS",
-                            description, page, totalRecords),
-                    expeditions);
+        return new TableResponse<>(
+                new TableResponse.Summary(
+                        TABLE_NAME,
+                        expeditions.isEmpty() ? "ERROR" : "SUCCESS",
+                        description,
+                        page,
+                        expeditions.size(),
+                        totalRecords),
+                expeditions);
     }
 
     private LocalDate parseDate(String value, String parameterName) {

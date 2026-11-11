@@ -21,9 +21,6 @@ public class Aid {
     @JsonProperty("INTERNACIONAL")
     private String internacional;
 
-    public Aid() {
-    }
-
     public String getCodPlazaBidea() {
         return codPlazaBidea;
     }

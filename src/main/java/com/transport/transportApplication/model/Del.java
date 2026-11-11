@@ -51,9 +51,6 @@ public class Del {
     @JsonProperty("IDENT_DACHSER")
     private String identDachser;
 
-    public Del() {
-    }
-
     public String getKeydel() {
         return keydel;
     }

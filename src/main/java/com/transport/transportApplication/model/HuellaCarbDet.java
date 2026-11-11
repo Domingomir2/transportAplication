@@ -41,9 +41,6 @@ public class HuellaCarbDet {
     @JsonProperty("TRANSPORTID")
     private BigInteger transportid;
 
-    public HuellaCarbDet() {
-    }
-
     public Long getExpedicion() {
         return expedicion;
     }

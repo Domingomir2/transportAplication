@@ -12,9 +12,6 @@ public class RcoRef {
     @JsonProperty("REF")
     private String ref;
 
-    public RcoRef() {
-    }
-
     public Long getKeyrco() {
         return keyrco;
     }

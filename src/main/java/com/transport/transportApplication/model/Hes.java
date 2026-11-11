@@ -58,9 +58,6 @@ public class Hes {
     @JsonProperty("AGENCIA_DACHSER")
     private String agenciaDachser;
 
-    public Hes() {
-    }
-
     public Long getExpedicion() {
         return expedicion;
     }

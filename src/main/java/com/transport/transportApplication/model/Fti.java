@@ -9,9 +9,6 @@ public class Fti {
     @JsonProperty("DESFTI")
     private String desfti;
 
-    public Fti() {
-    }
-
     public String getKeyfti() {
         return keyfti;
     }

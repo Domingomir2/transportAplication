@@ -26,9 +26,6 @@ public class IeEdp {
     @JsonProperty("DIVISA")
     private String divisa;
 
-    public IeEdp() {
-    }
-
     public Long getExpedicion() {
         return expedicion;
     }

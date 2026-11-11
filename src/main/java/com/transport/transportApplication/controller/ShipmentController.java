@@ -3,7 +3,6 @@ package com.transport.transportApplication.controller;
 import com.transport.transportApplication.model.Shipment;
 import com.transport.transportApplication.repository.ShipmentRepository;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,11 +11,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/shipments")
-@CrossOrigin(origins = "*") // Permitir peticiones desde Angular
+@CrossOrigin(origins = "${app.cors.allowed-origin}")
 public class ShipmentController {
 
-    @Autowired
-    private ShipmentRepository shipmentRepository;
+    private final ShipmentRepository shipmentRepository;
+
+    public ShipmentController(ShipmentRepository shipmentRepository) {
+        this.shipmentRepository = shipmentRepository;
+    }
 
     // Endpoint para listar todos los envíos
     @GetMapping

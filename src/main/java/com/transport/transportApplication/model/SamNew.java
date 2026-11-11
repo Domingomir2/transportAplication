@@ -12,9 +12,6 @@ public class SamNew {
     @JsonProperty("KEYSAM_DOM")
     private String keysamDom;
 
-    public SamNew() {
-    }
-
     public Integer getKeysam() {
         return keysam;
     }

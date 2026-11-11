@@ -50,7 +50,8 @@ public class DateFilteredTableRepository {
         String orderBy = validatedIdentifier(orderColumn);
         int lastRow = Math.multiplyExact(page, pageSize);
         int firstRow = Math.multiplyExact(page - 1, pageSize);
-        String sql = """
+        String sql ="";
+        sql = """
                 SELECT *
                 FROM (
                     SELECT date_rows.*, ROWNUM row_num
@@ -76,7 +77,8 @@ public class DateFilteredTableRepository {
     }
 
     public long countByDateRange(String tableName, LocalDate fromDate, LocalDate toDate) {
-        String sql = """
+        String sql ="";
+        sql = """
                 SELECT COUNT(*)
                 FROM %s
                 WHERE FECHA >= TO_DATE(?, 'DDMMYYYY')

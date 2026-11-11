@@ -266,9 +266,6 @@ public class Rho {
     @JsonProperty("CLI_DOM_RTE")
     private String cliDomRte;
 
-    public Rho() {
-    }
-
     public Long getExpedicion() {
         return expedicion;
     }

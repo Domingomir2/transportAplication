@@ -51,9 +51,6 @@ public class RhoImportador {
     @JsonProperty("IMP_SURPLUS")
     private String impSurplus;
 
-    public RhoImportador() {
-    }
-
     public Long getExpedicion() {
         return expedicion;
     }

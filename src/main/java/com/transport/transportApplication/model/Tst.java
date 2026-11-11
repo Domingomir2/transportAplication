@@ -12,9 +12,6 @@ public class Tst {
     @JsonProperty("COD_DACHSER")
     private Integer codDachser;
 
-    public Tst() {
-    }
-
     public Integer getKeytst() {
         return keytst;
     }

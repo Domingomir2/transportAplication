@@ -9,9 +9,6 @@ public class AdrClases {
     @JsonProperty("CLASES_DESC")
     private String clasesDesc;
 
-    public AdrClases() {
-    }
-
     public String getKeyadrClases() {
         return keyadrClases;
     }

@@ -33,9 +33,6 @@ public class Proveedores {
     @JsonProperty("GRUPO")
     private String grupo;
 
-    public Proveedores() {
-    }
-
     public Integer getKeyprove() {
         return keyprove;
     }

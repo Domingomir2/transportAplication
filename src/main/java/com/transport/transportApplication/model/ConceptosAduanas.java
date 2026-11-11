@@ -16,9 +16,6 @@ public class ConceptosAduanas {
     @JsonProperty("CTACONT")
     private String ctacont;
 
-    public ConceptosAduanas() {
-    }
-
     public String getKeyconc() {
         return keyconc;
     }

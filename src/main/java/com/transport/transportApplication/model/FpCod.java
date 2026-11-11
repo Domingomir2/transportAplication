@@ -12,9 +12,6 @@ public class FpCod {
     @JsonProperty("DESCRI_COD")
     private String descriCod;
 
-    public FpCod() {
-    }
-
     public Integer getKeyprove() {
         return keyprove;
     }

@@ -12,9 +12,6 @@ public class RefAduLista {
     @JsonProperty("COD_DACHSER")
     private String codDachser;
 
-    public RefAduLista() {
-    }
-
     public String getTipoRef() {
         return tipoRef;
     }

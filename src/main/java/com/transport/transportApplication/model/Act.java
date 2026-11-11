@@ -9,9 +9,6 @@ public class Act {
     @JsonProperty("DESCRIP")
     private String descrip;
 
-    public Act() {
-    }
-
     public Integer getKeyact() {
         return keyact;
     }

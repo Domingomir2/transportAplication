@@ -13,9 +13,6 @@ public class RhoProcAdu {
     @JsonProperty("FECHA_GRABA")
     private LocalDateTime fechaGraba;
 
-    public RhoProcAdu() {
-    }
-
     public Long getExpedicion() {
         return expedicion;
     }

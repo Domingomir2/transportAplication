@@ -12,8 +12,6 @@ public class Cli {
     @JsonProperty("KEYDEL")
     private String keydel;
 
-    public Cli() {
-    }
 
     public String getKeycli() {
         return keycli;

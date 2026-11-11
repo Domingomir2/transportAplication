@@ -44,9 +44,6 @@ public class SaInt {
     @JsonProperty("BORRADO")
     private Integer borrado;
 
-    public SaInt() {
-    }
-
     public Long getExpedicion() {
         return expedicion;
     }

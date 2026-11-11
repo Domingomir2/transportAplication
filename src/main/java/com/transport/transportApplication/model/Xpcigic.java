@@ -35,9 +35,6 @@ public class Xpcigic {
     @JsonProperty("SEMPOR")
     private String sempor;
 
-    public Xpcigic() {
-    }
-
     public String getDelegacion() {
         return delegacion;
     }

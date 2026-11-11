@@ -49,9 +49,6 @@ public class RhoInt {
     @JsonProperty("WEIGHT_FACTOR")
     private Integer weightFactor;
 
-    public RhoInt() {
-    }
-
     public Long getExpedicion() {
         return expedicion;
     }

@@ -55,9 +55,6 @@ public class Rcl {
     @JsonProperty("ORDEN")
     private Integer orden;
 
-    public Rcl() {
-    }
-
     public Long getKeyrco() {
         return keyrco;
     }

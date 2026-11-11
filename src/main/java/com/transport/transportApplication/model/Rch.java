@@ -125,9 +125,6 @@ public class Rch {
     @JsonProperty("CLI_DOM_ORD")
     private String cliDomOrd;
 
-    public Rch() {
-    }
-
     public Long getKeyrco() {
         return keyrco;
     }

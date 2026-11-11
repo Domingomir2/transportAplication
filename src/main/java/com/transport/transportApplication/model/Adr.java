@@ -73,9 +73,6 @@ public class Adr {
     @JsonProperty("ADR_CHECK_LITROS")
     private Integer adrCheckLitros;
 
-    public Adr() {
-    }
-
     public Long getAdrExpedicion() {
         return adrExpedicion;
     }

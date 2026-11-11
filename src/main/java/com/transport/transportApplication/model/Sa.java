@@ -56,9 +56,6 @@ public class Sa {
     @JsonProperty("PLAZA_LIQUIDACION")
     private String plazaLiquidacion;
 
-    public Sa() {
-    }
-
     public Long getExpedicion() {
         return expedicion;
     }

@@ -12,9 +12,6 @@ public class Ref {
     @JsonProperty("TIPO")
     private String tipo;
 
-    public Ref() {
-    }
-
     public Long getExpedicion() {
         return expedicion;
     }

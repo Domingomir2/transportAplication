@@ -9,9 +9,6 @@ public class Tsv {
     @JsonProperty("DENOM")
     private String denom;
 
-    public Tsv() {
-    }
-
     public Integer getKeytsv() {
         return keytsv;
     }

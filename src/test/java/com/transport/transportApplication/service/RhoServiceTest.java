@@ -5,11 +5,11 @@ import com.transport.transportApplication.repository.DateFilteredTableRepository
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 
@@ -20,25 +20,35 @@ class RhoServiceTest {
 
     @Test
     void getRhoUsesOffsetAsOneBasedPageNumber() {
+        when(repository.findByDateRange(
+                "RHO",
+                "EXPEDICION",
+                Rho.class,
+                LocalDate.of(2026, 1, 9),
+                LocalDate.of(2026, 1, 9),
+                3,
+                10)).thenReturn(List.of(new Rho()));
         when(repository.countByDateRange(
-                eq("RHO"),
-                eq(LocalDate.of(2026, 1, 9)),
-                eq(LocalDate.of(2026, 1, 9)))).thenReturn(200L);
+                "RHO",
+                LocalDate.of(2026, 1, 9),
+                LocalDate.of(2026, 1, 9))).thenReturn(200L);
 
         var response = rhoService.getRho("09012026", null, 10, 3);
 
         verify(repository).findByDateRange(
-                eq("RHO"),
-                eq("EXPEDICION"),
-                eq(Rho.class),
-                eq(LocalDate.of(2026, 1, 9)),
-                eq(LocalDate.of(2026, 1, 9)),
-                eq(3),
-                eq(10));
+                "RHO",
+                "EXPEDICION",
+                Rho.class,
+                LocalDate.of(2026, 1, 9),
+                LocalDate.of(2026, 1, 9),
+                3,
+                10);
         assertEquals("SUCCESS", response.summary().status());
+        assertEquals("RHO", response.summary().tableName());
         assertEquals(3, response.summary().page());
         assertEquals(200, response.summary().totalRecords());
         assertEquals("Consulta realizada correctamente", response.summary().description());
+        assertEquals(1, response.elements().size());
     }
 
     @Test
@@ -46,8 +56,10 @@ class RhoServiceTest {
         var response = rhoService.getRho("09012026", null, 100, 1);
 
         assertEquals(1, response.summary().page());
+        assertEquals("RHO", response.summary().tableName());
+        assertEquals("ERROR", response.summary().status());
         assertEquals(0, response.summary().totalRecords());
-        assertEquals("No se encontraron expediciones para el rango de fechas indicado",
+        assertEquals("No se encontraron expediciones para el rango de fechas en la página indicada",
                 response.summary().description());
     }
 
