@@ -122,7 +122,8 @@ public class RcoService {
                 .stream()
                 .toList();
 
-        long totalRecords= ordersClean.size();
+        List<String> tablas = List.of(TABLE_NAME,TABLE_NAME_HISTO);
+        long totalRecords= dateFilteredTableRepository.countByDateRange(tablas, ORDER_COLUMN, start, end);
 
         String description = ordersClean.isEmpty()
                 ? "No se encontraron recogidas para el rango de fechas en la página indicada"
