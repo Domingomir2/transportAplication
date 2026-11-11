@@ -52,6 +52,32 @@ class AllTableServiceTest {
         when(repository.supportsTable("CLI")).thenReturn(true);
 
         assertThrows(IllegalArgumentException.class, () -> service.getTable("CLI", 0, 1));
+        assertThrows(IllegalArgumentException.class, () -> service.getTable("CLI", -1, 1));
         assertThrows(IllegalArgumentException.class, () -> service.getTable("CLI", 10, 0));
+    }
+
+    @Test
+    void getTableRejectsInvalidNamesAndPaginationOverflow() {
+        assertThrows(IllegalArgumentException.class, () -> service.getTable("CLI;DROP", 10, 1));
+
+        when(repository.supportsTable("CLI")).thenReturn(true);
+        assertThrows(IllegalArgumentException.class,
+                () -> service.getTable("CLI", 2, Integer.MAX_VALUE));
+    }
+
+    @Test
+    void getTableDescribesEmptyPage() {
+        when(repository.supportsTable("CLI")).thenReturn(true);
+        when(repository.findAllAsMap("CLI", 3, 10)).thenReturn(List.of());
+        when(repository.countAll("CLI")).thenReturn(25L);
+
+        var response = service.getTable("cli", 10, 3);
+
+        assertEquals("ERROR", response.summary().status());
+        assertEquals(25, response.summary().totalRecords());
+        assertEquals(0, response.summary().pageRecords());
+        assertEquals("No se encontraron registros en la pagina indicada",
+                response.summary().description());
+        assertEquals(List.of(), response.elements());
     }
 }

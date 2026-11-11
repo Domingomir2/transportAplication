@@ -42,7 +42,7 @@ public class RhoTablesService {
 
 
         List<Map<String, Object>> rhoRows = rhoTablesRepository.findAllAsMap("RHO", expedicionReal);
-        Map<String, Object> rho = rhoRows.isEmpty() ? null : rhoRows.get(0);
+        Map<String, Object> rho = rhoRows.isEmpty() ? null : rhoRows.getFirst();
 
         ExpedicionDTO.Detalle detalle = new ExpedicionDTO.Detalle(
                 rhoTablesRepository.findAllAsMap("ADR", "ADR_EXPEDICION", expedicionReal),
@@ -75,7 +75,7 @@ public class RhoTablesService {
         if (!rhoTablesRepository.supportsTable(normalizedTableName)) {
             throw new IllegalArgumentException("La tabla solicitada no esta incluida en los manifiestos");
         }
-        if (expedicion.isEmpty() ) {
+        if (expedicion == null || expedicion.isBlank()) {
             throw new IllegalArgumentException("debe indicar una expedicion");
         }
 

@@ -34,6 +34,9 @@ public class AllTableService {
         if (!allTableRepository.supportsTable(normalizedTableName)) {
             throw new IllegalArgumentException("La tabla solicitada no esta incluida en los manifiestos");
         }
+        if (pageSize < 1) {
+            throw new IllegalArgumentException("numReg debe ser mayor que cero");
+        }
         if (page < 1) {
             throw new IllegalArgumentException("offset debe ser un numero de pagina mayor o igual que 1");
         }

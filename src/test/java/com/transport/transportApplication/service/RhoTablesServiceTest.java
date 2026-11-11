@@ -7,10 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -53,5 +50,70 @@ class RhoTablesServiceTest {
     @Test
     void getExpedicionCompletaRejectsMissingExpedition() {
         assertThrows(IllegalArgumentException.class, () -> service.getExpedicionCompleta(" "));
+    }
+
+    @Test
+    void getExpedicionCompletaUsesInputWhenDominoReferenceIsNotFound() {
+        when(repository.getRefDom("DOM-1")).thenReturn(null);
+        when(repository.findAllAsMap("RHO", "DOM-1")).thenReturn(List.of());
+
+        var response = service.getExpedicionCompleta("DOM-1");
+
+        assertNull(response.rho());
+        verify(repository).findAllAsMap("RHO", "DOM-1");
+    }
+
+    @Test
+    void getExpedicionCompletaFallsBackWhenDominoLookupFails() {
+        when(repository.getRefDom("DOM-2")).thenThrow(new IllegalStateException("lookup failed"));
+        when(repository.findAllAsMap("RHO", "DOM-2")).thenReturn(List.of());
+
+        service.getExpedicionCompleta("DOM-2");
+
+        verify(repository).findAllAsMap("RHO", "DOM-2");
+    }
+
+    @Test
+    void getTableNormalizesNameAndReturnsRowsAndCount() {
+        Map<String, Object> row = Map.of("KEYHES", "H1");
+        when(repository.supportsTable("HES")).thenReturn(true);
+        when(repository.getRefDom("DOM-3")).thenReturn("123");
+        when(repository.findAllAsMap("HES", "123")).thenReturn(List.of(row));
+        when(repository.countAll("HES", "123")).thenReturn(3L);
+
+        var response = service.getTable("hes", "DOM-3");
+
+        assertEquals("HES", response.summary().tableName());
+        assertEquals("SUCCESS", response.summary().status());
+        assertEquals(3L, response.summary().totalRecords());
+        assertEquals(List.of(row), response.elements());
+        verify(repository).findAllAsMap("HES", "123");
+    }
+
+    @Test
+    void getTableDescribesEmptyResultAndUsesInputWhenReferenceIsMissing() {
+        when(repository.supportsTable("HES")).thenReturn(true);
+        when(repository.getRefDom("DOM-4")).thenReturn(null);
+        when(repository.findAllAsMap("HES", "DOM-4")).thenReturn(List.of());
+
+        var response = service.getTable("HES", "DOM-4");
+
+        assertEquals("ERROR", response.summary().status());
+        assertEquals(0L, response.summary().pageRecords());
+        assertEquals(0L, response.summary().totalRecords());
+        assertEquals(List.of(), response.elements());
+        verify(repository).countAll("HES", "DOM-4");
+    }
+
+    @Test
+    void getTableRejectsInvalidDedicatedUnsupportedAndMissingInputs() {
+        assertThrows(IllegalArgumentException.class, () -> service.getTable("bad-name", "123"));
+        assertThrows(IllegalArgumentException.class, () -> service.getTable("RHO", "123"));
+        when(repository.supportsTable("NO_SUCH_TABLE")).thenReturn(false);
+        assertThrows(IllegalArgumentException.class, () -> service.getTable("NO_SUCH_TABLE", "123"));
+        when(repository.supportsTable("HES")).thenReturn(true);
+        assertThrows(IllegalArgumentException.class, () -> service.getTable("HES", ""));
+        assertThrows(IllegalArgumentException.class, () -> service.getTable("HES", "  "));
+        assertThrows(IllegalArgumentException.class, () -> service.getTable("HES", null));
     }
 }

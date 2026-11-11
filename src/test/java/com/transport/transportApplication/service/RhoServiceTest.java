@@ -7,11 +7,11 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 class RhoServiceTest {
 
@@ -91,5 +91,57 @@ class RhoServiceTest {
     void getRhoRejectsPageThatOverflowsRowBounds() {
         assertThrows(IllegalArgumentException.class,
                 () -> rhoService.getRho("09012026", null, 100, Integer.MAX_VALUE));
+    }
+
+    @Test
+    void getRhoRejectsMissingAndMalformedDates() {
+        assertThrows(IllegalArgumentException.class,
+                () -> rhoService.getRho(null, null, 10, 1));
+        assertThrows(IllegalArgumentException.class,
+                () -> rhoService.getRho("9-1-2026", null, 10, 1));
+        verifyNoInteractions(repository);
+    }
+
+    @Test
+    void getRhoAcceptsDateRangeAndReturnsLastPartialPage() {
+        LocalDate start = LocalDate.of(2026, 1, 9);
+        LocalDate end = LocalDate.of(2026, 1, 10);
+        when(repository.findByDateRange(
+                "RHO", "EXPEDICION", Rho.class, start, end, 2, 10))
+                .thenReturn(List.of(new Rho(), new Rho()));
+        when(repository.countByDateRange("RHO", start, end)).thenReturn(12L);
+
+        var response = rhoService.getRho("09012026", "10012026", 10, 2);
+
+        assertEquals(2L, response.summary().pageRecords());
+        assertEquals(12L, response.summary().totalRecords());
+        assertTrue(response.summary().lastPage());
+        verify(repository).findByDateRange(
+                "RHO", "EXPEDICION", Rho.class, start, end, 2, 10);
+    }
+
+    @Test
+    void getCountRhoReturnsSuccessAndEmptyStatuses() {
+        LocalDate date = LocalDate.of(2026, 1, 9);
+        when(repository.countByDateRange(List.of("RHO"), "EXPEDICION", date, date))
+                .thenReturn(4L, 0L);
+
+        var found = rhoService.getCountRho("09012026", null);
+        var empty = rhoService.getCountRho("09012026", "09012026");
+
+        assertEquals("SUCCESS", found.summary().status());
+        assertEquals(4L, found.summary().totalRecords());
+        assertEquals("ERROR", empty.summary().status());
+        assertEquals(0L, empty.summary().totalRecords());
+        assertNull(empty.elements());
+    }
+
+    @Test
+    void getCountRhoRejectsInvalidDatesAndRanges() {
+        assertThrows(IllegalArgumentException.class,
+                () -> rhoService.getCountRho("10012026", "09012026"));
+        assertThrows(IllegalArgumentException.class,
+                () -> rhoService.getCountRho("31022026", null));
+        verifyNoInteractions(repository);
     }
 }
