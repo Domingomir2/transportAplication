@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
@@ -76,8 +77,13 @@ public class AllTableRepository {
         String columns = columnsFor(tableName);
         int lastRow = Math.multiplyExact(page, pageSize);
         int firstRow = Math.multiplyExact(page - 1, pageSize);
+
+        List<Object> params = new ArrayList<>();
+
         String sql ="";
-        sql = """
+
+        if (pageSize>0){
+            sql = """
                 SELECT *
                 FROM (
                     SELECT all_rows.*, ROWNUM row_num
@@ -91,11 +97,29 @@ public class AllTableRepository {
                 WHERE row_num > ?
                 """.formatted(columns, table, columns);
 
+            params.add(lastRow);
+            params.add(firstRow);
+        }
+        else
+        {
+            sql = """
+                SELECT *
+                FROM (
+                    SELECT all_rows.*, ROWNUM row_num
+                    FROM (
+                        SELECT %s
+                        FROM %s
+                        ORDER BY %s
+                    ) all_rows
+                )
+                """.formatted(columns, table, columns);
+        }
+
+
         return jdbcTemplate.query(
                 sql,
                 new ColumnMapRowMapper(),
-                lastRow,
-                firstRow);
+                params.toArray());
     }
 
     public long countAll(String tableName) {

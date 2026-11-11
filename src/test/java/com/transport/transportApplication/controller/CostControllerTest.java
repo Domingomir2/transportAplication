@@ -1,9 +1,6 @@
 package com.transport.transportApplication.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.transport.transportApplication.model.CostRequest;
-import com.transport.transportApplication.model.CostResponse;
-import com.transport.transportApplication.service.CostService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 

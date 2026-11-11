@@ -13,6 +13,7 @@ import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 @Service
 @ConditionalOnProperty(prefix = "bidea.datasource", name = "url")
@@ -63,9 +64,32 @@ public class RhoService {
                         expeditions.isEmpty() ? "ERROR" : "SUCCESS",
                         description,
                         page,
-                        expeditions.size(),
-                        totalRecords),
+                        (long) expeditions.size(),
+                        totalRecords,
+                        expeditions.size() != numReg
+                        ),
                 expeditions);
+    }
+
+    public TableResponse<Map<String, Object>> getCountRho(String fromDate, String toDate){
+        LocalDate start = parseDate(fromDate, "fromDate");
+        LocalDate end = toDate == null || toDate.isBlank() ? start : parseDate(toDate, "toDate");
+
+        if (end.isBefore(start)) {throw new IllegalArgumentException("Fechas incorrectas");}
+
+        List<String> tablas = List.of(TABLE_NAME);
+        long totalRecords = dateFilteredTableRepository.countByDateRange(tablas, ORDER_COLUMN, start, end);
+
+        return new TableResponse<>(
+                new TableResponse.Summary(
+                        TABLE_NAME,
+                        totalRecords==0 ? "ERROR" : "SUCCESS",
+                        totalRecords==0 ? "No se han encontrado datos" : "Datos encontrados",
+                        null,
+                        null,
+                        totalRecords,
+                        true
+                ),null);
     }
 
     private LocalDate parseDate(String value, String parameterName) {

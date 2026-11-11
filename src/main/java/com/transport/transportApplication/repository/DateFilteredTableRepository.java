@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
@@ -90,6 +91,54 @@ public class DateFilteredTableRepository {
                 Long.class,
                 fromDate.format(ORACLE_DATE_FORMAT),
                 toDate.format(ORACLE_DATE_FORMAT));
+        return count == null ? 0 : count;
+    }
+
+    public long countByDateRange(List<String> tableNames, String clave,LocalDate fromDate, LocalDate toDate) {
+        if (tableNames == null || tableNames.isEmpty()) {
+            throw new IllegalArgumentException("Las tablas consultadas no son válidas");
+        }
+
+        if (clave == null || clave.isEmpty()) {
+            throw new IllegalArgumentException("La clave introducida no es válida");
+        }
+
+        List<Object> params = new ArrayList<>();
+
+        for (String ignored : tableNames) {
+            params.add(fromDate);
+            params.add(toDate.plusDays(1));
+        }
+
+        StringBuilder sql = new StringBuilder("""
+        SELECT COUNT(DISTINCT %s)
+        FROM (
+        """.formatted(clave));
+
+        int index = 0;
+
+        for (String tableName : tableNames) {
+            if (index != 0) {
+                sql.append(" UNION ");
+            }
+
+            sql.append("""
+            SELECT %s
+            FROM %s
+            WHERE FECHA >= ?
+              AND FECHA < ?
+            """.formatted(clave, qualifiedTableName(tableName)));
+
+            index++;
+        }
+
+        sql.append(")");
+
+        Long count = jdbcTemplate.queryForObject(
+                sql.toString(),
+                Long.class,
+                params.toArray()
+        );
         return count == null ? 0 : count;
     }
 
