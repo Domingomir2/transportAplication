@@ -59,8 +59,10 @@ public class AllTableService {
                         elements.isEmpty() ? "ERROR" : "SUCCESS",
                         description,
                         page,
-                        elements.size(),
-                        totalRecords),
+                        (long) elements.size(),
+                        totalRecords,
+                        pageSize != elements.size()
+                        ),
                 elements);
     }
 

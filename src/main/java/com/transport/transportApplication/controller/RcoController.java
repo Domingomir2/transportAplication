@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/rco")
 @ConditionalOnProperty(prefix = "bidea.datasource", name = "url")
@@ -20,7 +22,7 @@ public class RcoController {
     }
 
     @GetMapping
-    @Operation(operationId = "getRco", summary = "Consultar recogidas RCO por fecha")
+    @Operation(operationId = "getOrders", summary = "Consultar paginada de recogidas RCO/RCH por fecha")
     public TableResponse<Rco> getRco(
             @RequestParam String fromDate,
             @RequestParam(required = false) String toDate,
@@ -30,8 +32,16 @@ public class RcoController {
     }
 
     @GetMapping("/recogidaCompleta/{recogida}")
-    @Operation(operationId = "getRecogidaCompleta", summary = "Consultar una recogida y sus tablas relacionadas")
+    @Operation(operationId = "getCompleteOrder", summary = "Consultar una recogida y sus tablas relacionadas")
     public RecogidaDTO getRecogidaCompleta(@PathVariable String recogida) {
         return rcoService.getRecogidaCompleta(recogida);
+    }
+
+    @GetMapping("/cuentaRecogidas")
+    @Operation(operationId = "getCountOrders", summary = "Devuelve el número de recogidas para un rango de fechas")
+    public TableResponse<Map<String, Object>> getRcoCount(
+            @RequestParam String fromDate,
+            @RequestParam(required = false) String toDate) {
+        return rcoService.getCountRco(fromDate, toDate);
     }
 }

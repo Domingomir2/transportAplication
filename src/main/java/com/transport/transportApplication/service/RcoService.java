@@ -13,9 +13,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @ConditionalOnProperty(prefix = "bidea.datasource", name = "url")
@@ -27,6 +27,7 @@ public class RcoService {
             .withResolverStyle(ResolverStyle.STRICT);
 
     private static final String TABLE_NAME = "RCO";
+    private static final String TABLE_NAME_HISTO = "RCH";
     private static final String ORDER_COLUMN = "KEYRCO";
 
     private final DateFilteredTableRepository dateFilteredTableRepository;
@@ -44,8 +45,16 @@ public class RcoService {
             throw new IllegalArgumentException("debe indicar una recogida");
         }
 
+        //Consulto tanto en RCO como en su histórico RCH
         List<Map<String, Object>> rcoRows = rhoTablesRepository.findAllAsMap("RCO", filterColumn,recogida);
         rcoRows.addAll(rhoTablesRepository.findAllAsMap("RCH", filterColumn,recogida));
+
+        //Elimino los duplicados si los hubiera
+        Map<Object, Map<String, Object>> uniqueRows = new LinkedHashMap<>();
+        for (Map<String, Object> row : rcoRows) {
+            uniqueRows.putIfAbsent(row.get(ORDER_COLUMN), row);
+        }
+        rcoRows = new ArrayList<>(uniqueRows.values());
 
         Map<String, Object> rho = rcoRows.isEmpty() ? null : rcoRows.get(0);
 
@@ -55,6 +64,27 @@ public class RcoService {
                 rhoTablesRepository.findAllAsMap("RCO_REF", filterColumn,recogida));
 
         return new RecogidaDTO(rho, detalle);
+    }
+
+    public TableResponse<Map<String, Object>> getCountRco(String fromDate, String toDate){
+        LocalDate start = parseDate(fromDate, "fromDate");
+        LocalDate end = toDate == null || toDate.isBlank() ? start : parseDate(toDate, "toDate");
+
+        if (end.isBefore(start)) {throw new IllegalArgumentException("Fechas incorrectas");}
+
+        List<String> tablas = List.of(TABLE_NAME, TABLE_NAME_HISTO);
+        long totalRecords = dateFilteredTableRepository.countByDateRange(tablas, ORDER_COLUMN, start, end);
+
+        return new TableResponse<>(
+                new TableResponse.Summary(
+                        TABLE_NAME + " / " + TABLE_NAME_HISTO,
+                        totalRecords==0 ? "ERROR" : "SUCCESS",
+                        totalRecords==0 ? "No se han encontrado datos" : "Datos encontrados",
+                        null,
+                        null,
+                        totalRecords,
+                        true
+                        ),null);
     }
 
     public TableResponse<Rco> getRco(String fromDate, String toDate, int numReg, int page) {
@@ -77,20 +107,39 @@ public class RcoService {
 
         List<Rco> orders = dateFilteredTableRepository.findByDateRange(
                 TABLE_NAME, ORDER_COLUMN, Rco.class, start, end, page, numReg);
-        long totalRecords = dateFilteredTableRepository.countByDateRange(TABLE_NAME, start, end);
-        String description = orders.isEmpty()
+
+        orders.addAll(dateFilteredTableRepository.findByDateRange(
+                TABLE_NAME_HISTO, ORDER_COLUMN, Rco.class, start, end, page, numReg));
+
+
+        List<Rco> ordersClean = orders.stream()
+                .collect(Collectors.toMap(
+                        Rco::getKeyrco,
+                        Function.identity(),
+                        (existente, nuevo) -> nuevo
+                ))
+                .values()
+                .stream()
+                .toList();
+
+        List<String> tablas = List.of(TABLE_NAME,TABLE_NAME_HISTO);
+        long totalRecords= dateFilteredTableRepository.countByDateRange(tablas, ORDER_COLUMN, start, end);
+
+        String description = ordersClean.isEmpty()
                 ? "No se encontraron recogidas para el rango de fechas en la página indicada"
                 : "Consulta realizada correctamente";
 
         return new TableResponse<>(
                 new TableResponse.Summary(
                         TABLE_NAME,
-                        orders.isEmpty() ? "ERROR" : "SUCCESS",
+                        ordersClean.isEmpty() ? "ERROR" : "SUCCESS",
                         description,
                         page,
-                        orders.size(),
-                        totalRecords),
-                orders);
+                        (long) ordersClean.size(),
+                        totalRecords,
+                        numReg != ordersClean.size()
+                ),
+                ordersClean);
     }
 
     private LocalDate parseDate(String value, String parameterName) {

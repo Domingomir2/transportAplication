@@ -86,8 +86,6 @@ public class RhoTablesRepository {
                 )
                 """.formatted(columns, table, validatedFilterColumn);
 
-        //System.out.println(sql);
-
         return jdbcTemplate.query(
                 sql,
                 new ColumnMapRowMapper(),
