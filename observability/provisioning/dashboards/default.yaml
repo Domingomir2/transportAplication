@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: Transport dashboards
+    orgId: 1
+    folder: Transport
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: C:\Users\domingo.miralles\Downloads\transportApplication\transportApplication\observability\dashboards
