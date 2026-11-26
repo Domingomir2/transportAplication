@@ -4,19 +4,26 @@ import com.transport.transportApplication.model.Rho;
 import com.transport.transportApplication.repository.DateFilteredTableRepository;
 import org.junit.jupiter.api.Test;
 
+import java.io.StringWriter;
+import java.io.Writer;
 import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 class RhoServiceTest {
 
     private final DateFilteredTableRepository repository = mock(DateFilteredTableRepository.class);
-    private final RhoService rhoService = new RhoService(repository);
+    private final RhoTablesService rhoTablesService = mock(RhoTablesService.class);
+    private final RhoService rhoService = new RhoService(repository, rhoTablesService);
 
     @Test
     void getRhoUsesOffsetAsOneBasedPageNumber() {
@@ -118,6 +125,40 @@ class RhoServiceTest {
         assertTrue(response.summary().lastPage());
         verify(repository).findByDateRange(
                 "RHO", "EXPEDICION", Rho.class, start, end, 2, 10);
+    }
+
+    @Test
+    void writesSqlForExpeditionsInBatch() throws Exception {
+        LocalDate date = LocalDate.of(2026, 1, 9);
+        Rho first = new Rho();
+        first.setExpedicion(101L);
+        Rho second = new Rho();
+        second.setExpedicion(202L);
+        when(repository.findByDateRange("RHO", "EXPEDICION", Rho.class, date, date, 1, 100))
+                .thenReturn(List.of(first, second));
+        doAnswer(invocation -> {
+            Writer writer = invocation.getArgument(1);
+            writer.write("SQL 101\nSQL 202\n");
+            return null;
+        }).when(rhoTablesService).writeExpedicionesCompletaSql(anyList(), any(Writer.class));
+        StringWriter writer = new StringWriter();
+
+        rhoService.writeExpedicionCompletaSqlFechas("09012026", null, 100, 1, writer);
+
+        assertEquals("SQL 101\nSQL 202\n", writer.toString());
+        verify(rhoTablesService).writeExpedicionesCompletaSql(
+                List.of(first, second), writer);
+        verify(repository, never()).countByDateRange("RHO", date, date);
+    }
+
+    @Test
+    void writesNoExpeditionsMessageWhenResultIsEmpty() throws Exception {
+        StringWriter writer = new StringWriter();
+
+        rhoService.writeExpedicionCompletaSqlFechas("09012026", null, 100, 1, writer);
+
+        assertEquals("NO EXISTEN EXPEDICIONES", writer.toString());
+        verifyNoInteractions(rhoTablesService);
     }
 
     @Test

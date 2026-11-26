@@ -42,22 +42,24 @@ public class RhoTablesRepository {
             Class<T> rowType,
             String expedicion) {
         String table = qualifiedTableName(tableName);
-        String sql ="";
-        sql = """
+        String sql = """
                 SELECT *
                 FROM (
                     SELECT all_rows.*
                     FROM (
-                        SELECT %s
-                        FROM %s
-                        WHERE EXPEDICION =%s
+                        SELECT 
+                """ + columnsFor(tableName) + """
+                        FROM 
+                """ + table + """
+                        WHERE EXPEDICION = ?
                     ) all_rows
                 )
-                """.formatted(columnsFor(tableName), table, expedicion);
+                """;
 
         return jdbcTemplate.query(
                 sql,
-                BeanPropertyRowMapper.newInstance(rowType));
+                BeanPropertyRowMapper.newInstance(rowType),
+                expedicion);
     }
 
     public List<java.util.Map<String, Object>> findAllAsMap(
@@ -73,18 +75,21 @@ public class RhoTablesRepository {
         String table = qualifiedTableName(tableName);
         String columns = columnsFor(tableName);
         String validatedFilterColumn = validatedIdentifier(filterColumn);
-        String sql ="";
-        sql = """
+        String sql = """
                 SELECT *
                 FROM (
                     SELECT all_rows.*
                     FROM (
-                        SELECT %s
-                        FROM %s
-                        WHERE %s = ?
+                        SELECT 
+                """ + columns + """
+                        FROM 
+                """ + table + """
+                        WHERE 
+                """ + validatedFilterColumn + """
+                        = ?
                     ) all_rows
                 )
-                """.formatted(columns, table, validatedFilterColumn);
+                """;
 
         return jdbcTemplate.query(
                 sql,
@@ -99,16 +104,17 @@ public class RhoTablesRepository {
     }
 
     public long countAll(String tableName, String expedicion) {
-        String sql ="";
-        sql = """
+        String sql = """
                 SELECT COUNT(*)
-                FROM %s
-                WHERE EXPEDICION =%s
-                """.formatted(qualifiedTableName(tableName),expedicion);
+                FROM 
+                """ + qualifiedTableName(tableName) + """
+                WHERE EXPEDICION = ?
+                """;
 
         Long count = jdbcTemplate.queryForObject(
                 sql,
-                Long.class);
+                Long.class,
+                expedicion);
         return count == null ? 0 : count;
     }
 
@@ -137,16 +143,15 @@ public class RhoTablesRepository {
     }
 
     public String getRefDom(String ref) {
-        String sql ="";
-        sql = """
+        String sql = """
                 select expedicion
                 from REF
-                where referencia='%s'
+                where referencia=?
                 and tipo='DOM'
                 order by fecha_e desc
                 fetch first row only
-                """.formatted(ref);
-        return jdbcTemplate.queryForObject(sql, String.class);
+                """;
+        return jdbcTemplate.queryForObject(sql, String.class, ref);
     }
 
     private String columnsFor(String tableName) {
@@ -188,5 +193,71 @@ public class RhoTablesRepository {
             throw new IllegalArgumentException("El identificador de tabla o columna Oracle no es valido");
         }
         return identifier;
+    }
+
+    public List<java.util.Map<String, Object>> findAllAsMapByExpeditions(
+            String tableName,
+            String filterColumn,
+            List<String> expeditions) {
+        if (expeditions == null || expeditions.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        String table = qualifiedTableName(tableName);
+        String columns = columnsFor(tableName);
+        String validatedFilterColumn = validatedIdentifier(filterColumn);
+        String placeholders = String.join(", ", Collections.nCopies(expeditions.size(), "?"));
+        String sql = """
+                SELECT *
+                FROM (
+                    SELECT all_rows.*
+                    FROM (
+                        SELECT 
+                """ + columns + """
+                        FROM 
+                """ + table + """
+                        WHERE 
+                """ + validatedFilterColumn + """
+                        IN (
+                """ + placeholders + """
+                        )
+                    ) all_rows
+                )
+                """;
+
+        return jdbcTemplate.query(sql, new ColumnMapRowMapper(), expeditions.toArray());
+    }
+
+    public java.util.Map<String, String> findRealExpeditions(List<String> references) {
+        if (references == null || references.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        String placeholders = String.join(", ", Collections.nCopies(references.size(), "?"));
+        // NOSONAR - The table name is fixed to REF and the schema has already been validated.
+        String sql = """
+                SELECT referencia, expedicion
+                FROM (
+                    SELECT referencia,
+                           expedicion,
+                           ROW_NUMBER() OVER (
+                               PARTITION BY referencia
+                               ORDER BY fecha_e DESC
+                           ) rn
+                    FROM 
+                """ + qualifiedTableName("REF") + """
+                    WHERE tipo = 'DOM'
+                      AND referencia IN (
+                """ + placeholders + """
+                      )
+                )
+                WHERE rn = 1
+                """;
+
+        java.util.Map<String, String> result = new java.util.HashMap<>();
+        jdbcTemplate.query(sql, rs -> { // NOSONAR - Identifiers are validated and expedition values are bound.
+            result.put(rs.getString("referencia"), rs.getString("expedicion"));
+        }, references.toArray());
+        return result;
     }
 }

@@ -17,9 +17,20 @@
   },
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
+  "graphTooltip": 1,
   "id": null,
-  "links": [],
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "keepTime": true,
+      "tags": [],
+      "targetBlank": false,
+      "title": "Metricas y logs de la aplicacion",
+      "type": "link",
+      "url": "/d/dachser-spring/dachser-spring"
+    }
+  ],
   "liveNow": false,
   "panels": [
     {
@@ -27,18 +38,230 @@
         "type": "jaeger",
         "uid": "jaeger-local"
       },
+      "description": "Recuento por operacion entre las ultimas 1000 trazas encontradas en el intervalo seleccionado.",
       "fieldConfig": {
         "defaults": {},
         "overrides": []
       },
       "gridPos": {
-        "h": 9,
-        "w": 24,
+        "h": 12,
+        "w": 12,
         "x": 0,
         "y": 0
       },
+      "id": 11,
+      "options": {
+        "displayLabels": [
+          "name",
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "jaeger",
+            "uid": "jaeger-local"
+          },
+          "limit": 1000,
+          "operation": "",
+          "queryType": "search",
+          "refId": "A",
+          "service": "transportApplication",
+          "tags": ""
+        }
+      ],
+      "title": "Solicitudes por operacion",
+      "transformations": [
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "operation": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "traceID": {
+                "aggregations": [
+                  "count"
+                ],
+                "operation": "aggregate"
+              }
+            }
+          }
+        },
+        {
+          "id": "rowsToFields",
+          "options": {
+            "mappings": [
+              {
+                "fieldName": "operation",
+                "handlerKey": "field.name"
+              },
+              {
+                "fieldName": "traceID (count)",
+                "handlerKey": "field.value"
+              }
+            ]
+          }
+        }
+      ],
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "jaeger",
+        "uid": "jaeger-local"
+      },
+      "description": "Recuento por operacion entre las ultimas 1000 trazas con error encontradas en el intervalo seleccionado.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 12,
+      "options": {
+        "displayLabels": [
+          "name",
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "jaeger",
+            "uid": "jaeger-local"
+          },
+          "limit": 1000,
+          "operation": "",
+          "queryType": "search",
+          "refId": "A",
+          "service": "transportApplication",
+          "tags": "error=true"
+        }
+      ],
+      "title": "Errores por operacion",
+      "transformations": [
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "operation": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "traceID": {
+                "aggregations": [
+                  "count"
+                ],
+                "operation": "aggregate"
+              }
+            }
+          }
+        },
+        {
+          "id": "rowsToFields",
+          "options": {
+            "mappings": [
+              {
+                "fieldName": "operation",
+                "handlerKey": "field.name"
+              },
+              {
+                "fieldName": "traceID (count)",
+                "handlerKey": "field.value"
+              }
+            ]
+          }
+        }
+      ],
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "jaeger",
+        "uid": "jaeger-local"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "inspect": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 12,
+        "h": 10
+      },
       "id": 1,
-      "options": {},
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "showTypeIcons": false,
+        "footer": {
+          "show": false,
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "enablePagination": false
+        }
+      },
       "targets": [
         {
           "datasource": {
@@ -53,8 +276,9 @@
           "tags": ""
         }
       ],
-      "title": "Trazas recientes - transportApplication",
-      "type": "table"
+      "title": "Actividad reciente",
+      "type": "table",
+      "description": "Últimas 20 trazas del servicio transportApplication; usa el selector de tiempo para acotar la búsqueda."
     },
     {
       "datasource": {
@@ -62,18 +286,38 @@
         "uid": "jaeger-local"
       },
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "inspect": false
+          }
+        },
         "overrides": []
       },
       "gridPos": {
-        "h": 9,
-        "w": 24,
-        "x": 0,
-        "y": 9
+        "x": 12,
+        "y": 12,
+        "w": 12,
+        "h": 10
       },
       "id": 2,
       "options": {
-        "showHeader": true
+        "showHeader": true,
+        "cellHeight": "sm",
+        "showTypeIcons": false,
+        "footer": {
+          "show": false,
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "enablePagination": false
+        }
       },
       "targets": [
         {
@@ -89,8 +333,9 @@
           "tags": "error=true"
         }
       ],
-      "title": "Peticiones con errores",
-      "type": "table"
+      "title": "Solicitudes con errores",
+      "type": "table",
+      "description": "Trazas del servicio transportApplication marcadas con error=true."
     },
     {
       "datasource": {
@@ -98,17 +343,39 @@
         "uid": "jaeger-local"
       },
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "inspect": false
+          }
+        },
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
         "x": 0,
-        "y": 18
+        "y": 22,
+        "w": 12,
+        "h": 8
       },
       "id": 3,
-      "options": {},
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "showTypeIcons": false,
+        "footer": {
+          "show": false,
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "enablePagination": false
+        }
+      },
       "targets": [
         {
           "datasource": {
@@ -123,8 +390,9 @@
           "tags": ""
         }
       ],
-      "title": "GET /api/v1/rho",
-      "type": "table"
+      "title": "RHO · Consulta general",
+      "type": "table",
+      "description": "Trazas recientes de esta operación en Jaeger."
     },
     {
       "datasource": {
@@ -132,17 +400,39 @@
         "uid": "jaeger-local"
       },
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "inspect": false
+          }
+        },
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
         "x": 12,
-        "y": 18
+        "y": 22,
+        "w": 12,
+        "h": 8
       },
       "id": 4,
-      "options": {},
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "showTypeIcons": false,
+        "footer": {
+          "show": false,
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "enablePagination": false
+        }
+      },
       "targets": [
         {
           "datasource": {
@@ -157,8 +447,9 @@
           "tags": ""
         }
       ],
-      "title": "GET /api/v1/rho/expedicionCompleta/{expedicion}",
-      "type": "table"
+      "title": "RHO · Expedición completa",
+      "type": "table",
+      "description": "Trazas recientes de esta operación en Jaeger."
     },
     {
       "datasource": {
@@ -166,17 +457,39 @@
         "uid": "jaeger-local"
       },
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "inspect": false
+          }
+        },
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
         "x": 0,
-        "y": 26
+        "y": 30,
+        "w": 12,
+        "h": 8
       },
       "id": 5,
-      "options": {},
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "showTypeIcons": false,
+        "footer": {
+          "show": false,
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "enablePagination": false
+        }
+      },
       "targets": [
         {
           "datasource": {
@@ -191,8 +504,9 @@
           "tags": ""
         }
       ],
-      "title": "GET /api/v1/rho/{tableName}/{expedicion}",
-      "type": "table"
+      "title": "RHO · Consulta por tabla y expedición",
+      "type": "table",
+      "description": "Trazas recientes de esta operación en Jaeger."
     },
     {
       "datasource": {
@@ -200,17 +514,39 @@
         "uid": "jaeger-local"
       },
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "inspect": false
+          }
+        },
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
         "x": 12,
-        "y": 26
+        "y": 30,
+        "w": 12,
+        "h": 8
       },
       "id": 6,
-      "options": {},
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "showTypeIcons": false,
+        "footer": {
+          "show": false,
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "enablePagination": false
+        }
+      },
       "targets": [
         {
           "datasource": {
@@ -225,8 +561,9 @@
           "tags": ""
         }
       ],
-      "title": "GET /api/v1/rho/cuentaExpediciones",
-      "type": "table"
+      "title": "RHO · Recuento de expediciones",
+      "type": "table",
+      "description": "Trazas recientes de esta operación en Jaeger."
     },
     {
       "datasource": {
@@ -234,17 +571,39 @@
         "uid": "jaeger-local"
       },
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "inspect": false
+          }
+        },
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
         "x": 0,
-        "y": 34
+        "y": 38,
+        "w": 12,
+        "h": 8
       },
       "id": 7,
-      "options": {},
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "showTypeIcons": false,
+        "footer": {
+          "show": false,
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "enablePagination": false
+        }
+      },
       "targets": [
         {
           "datasource": {
@@ -259,8 +618,9 @@
           "tags": ""
         }
       ],
-      "title": "GET /api/v1/rco",
-      "type": "table"
+      "title": "RCO · Consulta general",
+      "type": "table",
+      "description": "Trazas recientes de esta operación en Jaeger."
     },
     {
       "datasource": {
@@ -268,17 +628,39 @@
         "uid": "jaeger-local"
       },
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "inspect": false
+          }
+        },
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
         "x": 12,
-        "y": 34
+        "y": 38,
+        "w": 12,
+        "h": 8
       },
       "id": 8,
-      "options": {},
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "showTypeIcons": false,
+        "footer": {
+          "show": false,
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "enablePagination": false
+        }
+      },
       "targets": [
         {
           "datasource": {
@@ -293,8 +675,9 @@
           "tags": ""
         }
       ],
-      "title": "GET /api/v1/rco/recogidaCompleta/{recogida}",
-      "type": "table"
+      "title": "RCO · Recogida completa",
+      "type": "table",
+      "description": "Trazas recientes de esta operación en Jaeger."
     },
     {
       "datasource": {
@@ -302,17 +685,39 @@
         "uid": "jaeger-local"
       },
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "inspect": false
+          }
+        },
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
         "x": 0,
-        "y": 42
+        "y": 46,
+        "w": 12,
+        "h": 8
       },
       "id": 9,
-      "options": {},
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "showTypeIcons": false,
+        "footer": {
+          "show": false,
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "enablePagination": false
+        }
+      },
       "targets": [
         {
           "datasource": {
@@ -327,8 +732,9 @@
           "tags": ""
         }
       ],
-      "title": "GET /api/v1/rco/cuentaRecogidas",
-      "type": "table"
+      "title": "RCO · Recuento de recogidas",
+      "type": "table",
+      "description": "Trazas recientes de esta operación en Jaeger."
     },
     {
       "datasource": {
@@ -336,17 +742,39 @@
         "uid": "jaeger-local"
       },
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "inspect": false
+          }
+        },
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
         "x": 12,
-        "y": 42
+        "y": 46,
+        "w": 12,
+        "h": 8
       },
       "id": 10,
-      "options": {},
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "showTypeIcons": false,
+        "footer": {
+          "show": false,
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "enablePagination": false
+        }
+      },
       "targets": [
         {
           "datasource": {
@@ -361,15 +789,59 @@
           "tags": ""
         }
       ],
-      "title": "GET /api/v1/tables/{tableName}",
-      "type": "table"
+      "title": "Tablas · Consulta general",
+      "type": "table",
+      "description": "Trazas recientes de esta operación en Jaeger."
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-local"
+      },
+      "description": "Logs de Spring Boot; los campos traceId permiten abrir la traza relacionada cuando estan disponibles.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 54
+      },
+      "id": 13,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-local"
+          },
+          "editorMode": "code",
+          "expr": "{app=\"transport-application\"}",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Logs relacionados",
+      "type": "logs"
     }
   ],
   "refresh": "30s",
   "schemaVersion": 39,
   "tags": [
     "transportApplication",
-    "jaeger"
+    "jaeger",
+    "api"
   ],
   "templating": {
     "list": []
@@ -380,8 +852,9 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Transport Application - Jaeger",
+  "title": "Transport | Observabilidad de API",
   "uid": "jaeger-local",
-  "version": 1,
-  "weekStart": ""
+  "version": 3,
+  "weekStart": "",
+  "description": "Explora la actividad reciente, detecta solicitudes fallidas y consulta trazas por operación. Los datos se obtienen de Jaeger y respetan el intervalo de tiempo seleccionado."
 }

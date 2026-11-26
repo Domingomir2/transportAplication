@@ -12,14 +12,22 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
+import java.io.Writer;
 import java.util.List;
 import java.util.Map;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(
@@ -90,6 +98,49 @@ class RhoControllerTest {
                 .andExpect(jsonPath("$.rho.EXPEDICION").value(123))
                 .andExpect(jsonPath("$.detalle.hes").isArray());
         verify(rhoTablesService).getExpedicionCompleta("123");
+    }
+
+    @Test
+    void downloadCompleteShipmentReturnsPostgresSqlFile() throws Exception {
+        when(rhoTablesService.getExpedicionCompletaSql("123"))
+                .thenReturn("BEGIN;\nINSERT INTO \"rho\" (\"expedicion\") VALUES (123);\nCOMMIT;\n");
+
+        mockMvc.perform(get("/api/v1/rho/expedicionCompleta/123/sql"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("text/sql;charset=UTF-8"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                        "INSERT INTO \"rho\" (\"expedicion\") VALUES (123);")))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
+                        .header().string("Content-Disposition",
+                                org.hamcrest.Matchers.containsString("expedicion_123.sql")));
+        verify(rhoTablesService).getExpedicionCompletaSql("123");
+    }
+
+    @Test
+    void downloadsDateFilteredSqlAsAStream() throws Exception {
+        doAnswer(invocation -> {
+            Writer writer = invocation.getArgument(4);
+            writer.write("SQL DE EXPEDICIONES");
+            return null;
+        }).when(rhoService).writeExpedicionCompletaSqlFechas(
+                eq("09012026"), eq("10012026"), eq(100), eq(1), any(Writer.class));
+
+        MvcResult result = mockMvc.perform(get("/api/v1/rho/expedicionCompletaFecha/sql")
+                        .param("fromDate", "09012026")
+                        .param("toDate", "10012026"))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(result))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("text/sql;charset=UTF-8"))
+                .andExpect(content().string("SQL DE EXPEDICIONES"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
+                        .header().string("Content-Disposition",
+                                org.hamcrest.Matchers.containsString(
+                                        "Expediciones_Desde_Fecha_09012026_Hasta_Fecha_10012026_pagina_1.sql")));
+        verify(rhoService).writeExpedicionCompletaSqlFechas(
+                eq("09012026"), eq("10012026"), eq(100), eq(1), any(Writer.class));
     }
 
     @Test

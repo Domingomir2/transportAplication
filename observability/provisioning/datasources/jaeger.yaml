@@ -1,8 +1,30 @@
 apiVersion: 1
 
 datasources:
+  - name: Dachser Prometheus
+    type: prometheus
+    uid: prometheus
+    url: http://localhost:9090
+    access: proxy
+    isDefault: true
+
+  - name: Loki
+    type: loki
+    uid: loki-local
+    url: http://localhost:3100
+    access: proxy
+    isDefault: false
+    jsonData:
+      derivedFields:
+        - name: traceId
+          matcherRegex: '"traceId":"([a-fA-F0-9]+)"'
+          datasourceUid: jaeger-local
+          url: '$${__value.raw}'
+          urlDisplayLabel: Ver traza en Jaeger
+
   - name: Jaeger
     type: jaeger
     uid: jaeger-local
     url: http://127.0.0.1:16686
-    isDefault: true
+    access: proxy
+    isDefault: false
